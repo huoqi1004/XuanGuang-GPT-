@@ -1,0 +1,24 @@
+{
+  "deepseekApiKey": "sk-233cd79c0e484bd3b2128cd2f20b3ede",
+  "deepseekApiBase": "https://api.deepseek.com",
+  "deepseekModel": "deepseek-chat",
+  "adminPassword": "admin123",
+  "scanner": {
+    "concurrency": 256,
+    "timeoutMs": 1500
+  },
+  "users": [
+    {
+      "username": "user1",
+      "passhash": "8b159a0d128f33ba3fdca704b31ea7934cc978c1768378a38f5d4347b6e5a42f",
+      "createdAt": 1763985455755
+    },
+    {
+      "username": "111",
+      "passhash": "f6e0a1e2ac41945a9aa7ff8a8aaa0cebc12a3bcc981a929ad5cf810a090e11ae",
+      "createdAt": 1764046195038
+    }
+  ],
+  "ipBlacklist": [],
+  "ipBlacklistEnabled": false
+}

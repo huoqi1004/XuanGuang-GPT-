@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>DeepSeek 漏洞扫描智能体</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <canvas id="bg-canvas"></canvas>
+    <header class="header">
+      <div class="brand">DeepSeek 安全评估</div>
+      <nav class="nav">
+        <a href="#/login" id="nav-login">登录</a>
+        <a href="#/dashboard" id="nav-dashboard">仪表盘</a>
+        <a href="#/config" id="nav-config">配置</a>
+        <a href="#/baseline" id="nav-baseline">基线排查</a>
+        <a href="#/situation" id="nav-situation">态势感知</a>
+        <a href="#/defense" id="nav-defense">自动防御</a>
+        <a href="#/av" id="nav-av">病毒查杀</a>
+        <a href="#/edge" id="nav-edge">边缘设备</a>
+      </nav>
+    </header>
+    <main class="main">
+      <section id="view-login" class="view card">
+        <h1>登录</h1>
+        <div class="form">
+          <label>用户名</label>
+          <input id="login-username" value="admin" />
+          <label>密码</label>
+          <input id="login-password" type="password" placeholder="请输入密码" />
+          <button id="btn-login">登录</button>
+          <div id="login-status" class="status"></div>
+          <div class="status">没有账户？<a href="#/register">注册</a></div>
+        </div>
+      </section>
+      <section id="view-register" class="view card">
+        <h1>注册</h1>
+        <div class="form">
+          <label>用户名</label>
+          <input id="reg-username" />
+          <label>密码</label>
+          <input id="reg-password" type="password" />
+          <label>确认密码</label>
+          <input id="reg-confirm" type="password" />
+          <button id="btn-register">注册</button>
+          <div id="reg-status" class="status"></div>
+        </div>
+      </section>
+      <section id="view-dashboard" class="view card">
+        <h1>仪表盘</h1>
+        <div class="stats">
+          <div class="stat"><div class="stat-label">资产数量</div><div class="stat-value" id="stat-assets">-</div></div>
+          <div class="stat"><div class="stat-label">高风险</div><div class="stat-value" id="stat-high">-</div></div>
+          <div class="stat"><div class="stat-label">中风险</div><div class="stat-value" id="stat-medium">-</div></div>
+          <div class="stat"><div class="stat-label">低风险</div><div class="stat-value" id="stat-low">-</div></div>
+        </div>
+        <div class="grid">
+          <div class="panel">
+            <div class="form">
+              <label>CIDR</label>
+              <input id="cidr" value="192.168.0.0/24" />
+              <label>模型</label>
+              <input id="model" placeholder="deepseek-chat" />
+              <label>端口列表</label>
+              <input id="ports" placeholder="如: 80,443,22" />
+              <button id="start">开始扫描</button>
+            </div>
+            <div id="status" class="status"></div>
+          </div>
+          <div class="panel">
+            <h2>资产与端口</h2>
+            <table id="table"></table>
+          </div>
+          <div class="panel">
+            <h2>安全评估报告</h2>
+            <button id="btn-print">打印报告</button>
+            <pre id="report"></pre>
+          </div>
+          <div class="panel">
+            <h2>端口分布</h2>
+            <table id="port-table"></table>
+          </div>
+          <div class="panel">
+            <h2>威胁情报</h2>
+            <div id="intel"></div>
+          </div>
+          <div class="panel">
+            <h2>修复计划</h2>
+            <button id="btn-remediate">生成修复计划</button>
+            <pre id="remediation"></pre>
+          </div>
+        </div>
+      </section>
+      <section id="view-config" class="view card">
+        <h1>配置</h1>
+        <div class="form">
+          <label>DeepSeek API Key</label>
+          <input id="cfg-key" type="password" />
+          <label>API Base</label>
+          <input id="cfg-base" />
+          <label>默认模型</label>
+          <input id="cfg-model" />
+          <label>并发</label>
+          <input id="cfg-concurrency" type="number" />
+          <label>超时(ms)</label>
+          <input id="cfg-timeout" type="number" />
+          <label>管理员密码</label>
+          <input id="cfg-admin" type="password" />
+          <label>IP黑名单(逗号分隔，可填CIDR)</label>
+          <input id="cfg-blacklist" placeholder="如: 203.0.113.7, 198.51.100.0/24" />
+          <label>启用黑名单</label>
+          <input id="cfg-blacklist-enabled" type="checkbox" checked />
+          <button id="btn-save-cfg">保存配置</button>
+          <div id="cfg-status" class="status"></div>
+        </div>
+      </section>
+      <section id="view-baseline" class="view card">
+        <h1>基线排查</h1>
+        <div class="form">
+          <label>基线策略</label>
+          <select id="bl-policy">
+            <option value="CIS_Level1">CIS Level 1</option>
+            <option value="CIS_Level2">CIS Level 2</option>
+            <option value="ISO27001">ISO 27001</option>
+            <option value="Custom">自定义</option>
+          </select>
+          <label>使用最近一次扫描资产</label>
+          <input id="bl-use-last" type="checkbox" checked />
+          <button id="btn-bl-start">开始基线排查</button>
+          <div id="bl-status" class="status"></div>
+        </div>
+        <div class="panel">
+          <h2>基线报告</h2>
+          <button id="btn-bl-print">打印基线报告</button>
+          <pre id="bl-report"></pre>
+        </div>
+      </section>
+      <section id="view-situation" class="view card">
+        <h1>态势感知</h1>
+        <div class="form">
+          <label>数据源</label>
+          <div>
+            <span>OTX/Shodan/AbuseIPDB/VirusTotal</span>
+          </div>
+          <button id="btn-sit-start">开始态势分析</button>
+          <div id="sit-status" class="status"></div>
+        </div>
+        <div class="panel">
+          <h2>情报趋势</h2>
+          <div id="sit-feeds"></div>
+        </div>
+        <div class="panel">
+          <h2>资产情报</h2>
+          <div id="sit-intel"></div>
+        </div>
+        <div class="panel">
+          <h2>态势报告</h2>
+          <button id="btn-sit-print">打印态势报告</button>
+          <pre id="sit-report"></pre>
+        </div>
+      </section>
+      <section id="view-defense" class="view card">
+        <h1>自动化防御</h1>
+        <div class="form">
+          <label>启用无人值守</label>
+          <input id="df-auto" type="checkbox" />
+          <label>周期(秒)</label>
+          <input id="df-interval" type="number" value="120" />
+          <button id="btn-df-start">启动防御</button>
+          <button id="btn-df-stop">停止防御</button>
+          <div id="df-status" class="status"></div>
+        </div>
+        <div class="panel">
+          <h2>上次审查结论</h2>
+          <pre id="df-report"></pre>
+        </div>
+        <div class="panel">
+          <h2>已应用动作(模拟)</h2>
+          <div id="df-actions"></div>
+          <button id="btn-df-print">打印防御报告</button>
+        </div>
+      </section>
+      <section id="view-av" class="view card">
+        <h1>病毒查杀</h1>
+        <div class="grid">
+          <div class="panel">
+            <h2>上传样本</h2>
+            <div class="form">
+              <label>文件</label>
+              <input id="av-file" type="file" />
+              <button id="btn-av-upload">上传并查杀</button>
+              <div id="av-status" class="status"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>按哈希查杀</h2>
+            <div class="form">
+              <label>SHA256</label>
+              <input id="av-hash" />
+              <button id="btn-av-hash">按哈希查杀</button>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>模型投毒检测</h2>
+            <div class="form" style="grid-template-columns: 1fr;">
+              <textarea id="av-text" rows="6" placeholder="输入可疑提示或文本"></textarea>
+              <button id="btn-av-poison">检测投毒</button>
+            </div>
+            <pre id="av-poison"></pre>
+          </div>
+          <div class="panel">
+            <h2>病毒分析报告</h2>
+            <button id="btn-av-print">打印病毒报告</button>
+            <pre id="av-report"></pre>
+          </div>
+          <div class="panel">
+            <h2>高频病毒家族</h2>
+            <table id="av-stats"></table>
+          </div>
+        </div>
+      </section>
+      <section id="view-edge" class="view card">
+        <h1>边缘设备</h1>
+        <div class="grid">
+          <div class="panel">
+            <h2>设备列表</h2>
+            <button id="btn-edge-refresh">刷新</button>
+            <table id="edge-table"></table>
+          </div>
+          <div class="panel">
+            <h2>连接说明</h2>
+            <pre id="edge-guide"></pre>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script src="/bg.js"></script>
+    <script src="/app.js"></script>
+  </body>
+  </html>
