@@ -54,3 +54,7 @@ coverage/
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+# Configuration files with sensitive data
+server/data/config.json
+server/data/quarantine/

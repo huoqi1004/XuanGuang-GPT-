@@ -1,5 +1,11 @@
 {
-  "deepseekApiKey": "sk-233cd79c0e484bd3b2128cd2f20b3ede",
+  "deepseekApiKey": "",
+  "shodanApiKey": "",
+  "abuseIpdbKey": "",
+  "virustotalApiKey": "",
+  "mispBaseUrl": "",
+  "mispApiKey": "",
+  "edgeSecret": "",
   "deepseekApiBase": "https://api.deepseek.com",
   "deepseekModel": "deepseek-chat",
   "adminPassword": "admin123",
