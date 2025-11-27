@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>玄光安全GPT - 测试运行器</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    .controls {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f5f5f5;
+      border-radius: 8px;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #3498db;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+    button:hover {
+      background: #2980b9;
+    }
+    .test-results {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .test-summary {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .summary-item {
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    .total { background: #ecf0f1; }
+    .passed { background: #d4edda; color: #155724; }
+    .failed { background: #f8d7da; color: #721c24; }
+    .skipped { background: #fff3cd; color: #856404; }
+    .test-module {
+      margin-bottom: 30px;
+      padding: 20px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+    }
+    .test-case {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-left: 4px solid #ddd;
+    }
+    .test-case.passed {
+      border-left-color: #28a745;
+      background: #f8fff8;
+    }
+    .test-case.failed {
+      border-left-color: #dc3545;
+      background: #fff8f8;
+    }
+    .test-case.skipped {
+      border-left-color: #ffc107;
+      background: #fffbf0;
+    }
+    .test-details {
+      margin-top: 10px;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+      font-family: monospace;
+      white-space: pre-wrap;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px;
+      font-size: 18px;
+      color: #666;
+    }
+    .loading.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>玄光安全GPT - 自动化测试系统</h1>
+  
+  <div class="controls">
+    <h2>测试控制</h2>
+    <div>
+      <button id="run-all-tests">运行所有测试</button>
+      <button id="run-unit-tests">仅运行单元测试</button>
+      <button id="run-integration-tests">仅运行集成测试</button>
+      <button id="run-performance-tests">运行性能测试</button>
+      <button id="run-security-tests">运行安全测试</button>
+      <button id="clear-results">清除结果</button>
+    </div>
+    <div style="margin-top: 15px;">
+      <label>
+        <input type="checkbox" id="verbose-mode" checked>
+        详细模式
+      </label>
+    </div>
+  </div>
+  
+  <div class="loading" id="loading-indicator">
+    <p>测试正在运行中，请稍候...</p>
+  </div>
+  
+  <div class="test-results" id="test-results">
+    <h2>测试结果</h2>
+    <div class="test-summary" id="test-summary">
+      <div class="summary-item total">总测试: <span id="total-count">0</span></div>
+      <div class="summary-item passed">通过: <span id="passed-count">0</span></div>
+      <div class="summary-item failed">失败: <span id="failed-count">0</span></div>
+      <div class="summary-item skipped">跳过: <span id="skipped-count">0</span></div>
+      <div class="summary-item">持续时间: <span id="duration">0ms</span></div>
+    </div>
+    
+    <div id="test-modules-container">
+      <!-- 测试模块结果将显示在这里 -->
+      <p style="text-align: center; color: #666;">点击上方按钮运行测试</p>
+    </div>
+  </div>
+  
+  <!-- 导入测试运行器 -->
+  <script src="../ids/test/IDS_TestSuite.js"></script>
+  <script src="../ids/test/PerformanceTester.js"></script>
+  <script src="main_test_runner.js"></script>
+  
+  <script>
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+      const runner = new MainTestRunner();
+      
+      // 绑定按钮事件
+      document.getElementById('run-all-tests').onclick = async function() {
+        await runTests({});
+      };
+      
+      document.getElementById('run-unit-tests').onclick = async function() {
+        await runTests({ testTypes: ['unit'] });
+      };
+      
+      document.getElementById('run-integration-tests').onclick = async function() {
+        await runTests({ testTypes: ['integration'] });
+      };
+      
+      document.getElementById('run-performance-tests').onclick = async function() {
+        await runTests({ testTypes: ['performance'] });
+      };
+      
+      document.getElementById('run-security-tests').onclick = async function() {
+        await runTests({ testTypes: ['security'] });
+      };
+      
+      document.getElementById('clear-results').onclick = function() {
+        clearResults();
+      };
+      
+      // 运行测试并显示结果
+      async function runTests(config) {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        const modulesContainer = document.getElementById('test-modules-container');
+        
+        // 显示加载状态
+        loadingIndicator.classList.add('active');
+        modulesContainer.innerHTML = '';
+        
+        try {
+          // 运行测试
+          const verbose = document.getElementById('verbose-mode').checked;
+          const results = await runner.runAllTests({ ...config, verbose });
+          
+          // 更新摘要信息
+          updateSummary(results);
+          
+          // 显示模块结果
+          displayModuleResults(results.resultsByModule);
+        } catch (error) {
+          modulesContainer.innerHTML = `<div class="test-case failed">
+            <strong>测试运行失败:</strong> ${error.message}
+          </div>`;
+        } finally {
+          loadingIndicator.classList.remove('active');
+        }
+      }
+      
+      // 更新测试摘要
+      function updateSummary(results) {
+        document.getElementById('total-count').textContent = results.totalTests || 0;
+        document.getElementById('passed-count').textContent = results.passed || 0;
+        document.getElementById('failed-count').textContent = results.failed || 0;
+        document.getElementById('skipped-count').textContent = results.skipped || 0;
+        document.getElementById('duration').textContent = results.duration || '0ms';
+      }
+      
+      // 显示模块测试结果
+      function displayModuleResults(moduleResults) {
+        const container = document.getElementById('test-modules-container');
+        
+        if (!moduleResults || Object.keys(moduleResults).length === 0) {
+          container.innerHTML = '<p style="text-align: center; color: #666;">无测试结果</p>';
+          return;
+        }
+        
+        Object.entries(moduleResults).forEach(([moduleName, results]) => {
+          const moduleEl = document.createElement('div');
+          moduleEl.className = 'test-module';
+          
+          const hasFailed = results.failed > 0;
+          const hasPassed = results.passed > 0 && results.failed === 0;
+          
+          moduleEl.innerHTML = `
+            <h3>${moduleName} (通过: ${results.passed || 0}, 失败: ${results.failed || 0})</h3>
+            <div class="test-cases-container"></div>
+          `;
+          
+          container.appendChild(moduleEl);
+          
+          // 显示测试用例结果
+          const casesContainer = moduleEl.querySelector('.test-cases-container');
+          if (results.testCases && results.testCases.length > 0) {
+            results.testCases.forEach(testCase => {
+              const caseEl = document.createElement('div');
+              caseEl.className = `test-case ${testCase.passed ? 'passed' : 'failed'}`;
+              caseEl.innerHTML = `
+                <div><strong>${testCase.name}</strong> - ${testCase.passed ? '通过' : '失败'}</div>
+              `;
+              
+              if (!testCase.passed && testCase.error) {
+                caseEl.innerHTML += `
+                  <div class="test-details">错误信息: ${testCase.error}</div>
+                `;
+              } else if (testCase.message) {
+                caseEl.innerHTML += `
+                  <div class="test-details">${testCase.message}</div>
+                `;
+              }
+              
+              casesContainer.appendChild(caseEl);
+            });
+          }
+        });
+      }
+      
+      // 清除结果
+      function clearResults() {
+        updateSummary({ totalTests: 0, passed: 0, failed: 0, skipped: 0, duration: '0ms' });
+        document.getElementById('test-modules-container').innerHTML = 
+          '<p style="text-align: center; color: #666;">点击上方按钮运行测试</p>';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="天穹安防系统 - 网络安全智能分析平台">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
+    <title>天穹安防系统</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
+    <header class="header">
+        <div class="brand">天穹安防系统</div>
+        <nav class="nav">
+            <a href="#/dashboard" id="nav-dashboard">仪表盘</a>
+            <a href="#/config" id="nav-config">配置</a>
+            <a href="#/ids" id="nav-ids">入侵检测系统</a>
+        </nav>
+    </header>
+    <main>
+        <!-- 登录视图 -->
+        <section id="view-login" class="view">
+            <h2>登录</h2>
+            <div class="login-form">
+                <input type="text" id="login-username" placeholder="用户名">
+                <input type="password" id="login-password" placeholder="密码">
+                <button id="login-btn">登录</button>
+            </div>
+        </section>
+    </main>
+    <script src="/bg.js"></script>
+    <script>
+        // 简化版本的app.js
+        const state = {
+            token: localStorage.getItem("token") || "",
+            lastScanId: "",
+            lastResult: null,
+            isLoading: false,
+            user: JSON.parse(localStorage.getItem('userInfo')) || null,
+            tokenExpireAt: localStorage.getItem('tokenExpireAt') ? parseInt(localStorage.getItem('tokenExpireAt')) : null,
+            isLoggedIn: false,
+            isCheckingExpiry: false,
+            viewTransitionInProgress: false,
+            cachedViews: {},
+            performanceMode: localStorage.getItem('app_performance_mode') || 'auto'
+        };
+        
+        function init() {
+            console.log('简化版应用初始化完成');
+        }
+        
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
