@@ -1,0 +1,124 @@
+name: 玄光安全GPT - CI/CD流程
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  # 定期触发（每天运行一次）
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  test:
+    name: 运行测试
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+      
+      - name: 设置Node.js环境
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'npm'
+      
+      - name: 安装依赖
+        run: |
+          npm install -g http-server
+          # 安装测试所需的依赖
+      
+      - name: 启动测试服务器
+        run: |
+          cd web
+          http-server -p 3000 &
+          sleep 5
+      
+      - name: 运行集成测试
+        run: |
+          echo "运行测试..."
+          # 这里可以添加实际的测试命令
+          # 例如使用playwright、cypress等进行前端测试
+      
+      - name: 安全扫描
+        run: |
+          echo "进行安全扫描..."
+          # 这里可以集成安全扫描工具
+  
+  build:
+    name: 构建项目
+    needs: test
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v3
+      
+      - name: 设置构建环境
+        run: |
+          # 设置构建所需的环境
+      
+      - name: 构建项目
+        run: |
+          echo "构建项目..."
+          # 这里可以添加实际的构建命令
+          # 如果项目需要构建步骤
+      
+      - name: 运行性能测试
+        run: |
+          echo "运行性能测试..."
+          # 这里可以添加性能测试命令
+  
+  deploy:
+    name: 部署预览
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+      - name: 检出构建产物
+        uses: actions/checkout@v3
+      
+      - name: 部署预览环境
+        run: |
+          echo "部署到预览环境..."
+          # 这里可以添加预览环境的部署命令
+      
+      - name: 通知
+        run: |
+          echo "预览部署完成，访问地址: https://preview.example.com"
+  
+  release:
+    name: 正式发布
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: 检出构建产物
+        uses: actions/checkout@v3
+      
+      - name: 创建发布版本
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.run_number }}
+          release_name: 版本 v${{ github.run_number }}
+          body: |
+            自动化发布的新版本
+            - 运行编号: ${{ github.run_number }}
+            - 提交信息: ${{ github.event.head_commit.message }}
+          draft: false
+          prerelease: false
+      
+      - name: 部署生产环境
+        run: |
+          echo "部署到生产环境..."
+          # 这里可以添加生产环境的部署命令
+      
+      - name: 发送部署通知
+        run: |
+          echo "生产环境部署完成"
