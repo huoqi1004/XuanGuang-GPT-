@@ -1,5 +1,5 @@
 {
-  "deepseekApiKey": "",
+  "deepseekApiKey": "sk-fbe73675446a4861a6a5a81de449f25e",
   "shodanApiKey": "",
   "abuseIpdbKey": "",
   "virustotalApiKey": "",
@@ -26,5 +26,16 @@
     }
   ],
   "ipBlacklist": [],
-  "ipBlacklistEnabled": false
+  "ipBlacklistEnabled": true,
+  "useLocalModel": false,
+  "enhanceWithLocalModel": false,
+  "defense": {
+    "enabled": false,
+    "intervalSec": 120,
+    "autoApply": false,
+    "primaryModel": "deepseek-chat",
+    "guardModel": "deepseek-chat",
+    "guardThreshold": "medium",
+    "maxActionsPerRun": 10
+  }
 }

@@ -1,0 +1,29 @@
+{
+  "paths": {
+    "models": "E:\\\u7384\u5149\u5b89\u5168GPT\\ml\\models",
+    "logs": "E:\\\u7384\u5149\u5b89\u5168GPT\\ml\\logs",
+    "visualizations": "E:\\\u7384\u5149\u5b89\u5168GPT\\ml\\visualizations"
+  },
+  "data_paths": {
+    "training_data": "E:\\\u7384\u5149\u5b89\u5168GPT\\ml\\data\\processed\\training",
+    "validation_data": "E:\\\u7384\u5149\u5b89\u5168GPT\\ml\\data\\processed\\validation",
+    "testing_data": "E:\\\u7384\u5149\u5b89\u5168GPT\\ml\\data\\processed\\testing",
+    "raw_data": "E:\\\u7384\u5149\u5b89\u5168GPT\\ml\\data\\raw"
+  },
+  "model_params": {
+    "input_dim": 64,
+    "hidden_dims": [
+      64,
+      32,
+      16
+    ],
+    "output_dim": 1,
+    "dropout_rate": 0.4,
+    "learning_rate": 0.0005
+  },
+  "training": {
+    "batch_size": 64,
+    "epochs": 100,
+    "learning_rate": 0.0005
+  }
+}

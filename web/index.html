@@ -3,48 +3,84 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="天穹安防系统 - 网络安全智能分析平台" />
+    
+    <!-- 内容安全策略(CSP) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'" />
+    
+    <!-- XSS保护 -->
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    
+    <!-- 防止点击劫持 -->
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    
+    <!-- 强制HTTPS -->
+    <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains" />
+    
     <title>玄光安全GPT</title>
-    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <canvas id="bg-canvas"></canvas>
+    <canvas id="bg-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1;"></canvas>
     <header class="header">
       <div class="brand">玄光安全GPT</div>
       <nav class="nav">
-        <a href="#/login" id="nav-login">登录</a>
-        <a href="#/dashboard" id="nav-dashboard">仪表盘</a>
-        <a href="#/config" id="nav-config">配置</a>
-        <a href="#/baseline" id="nav-baseline">基线排查</a>
-        <a href="#/situation" id="nav-situation">态势感知</a>
-        <a href="#/defense" id="nav-defense">自动防御</a>
-        <a href="#/av" id="nav-av">病毒查杀</a>
-        <a href="#/edge" id="nav-edge">边缘设备</a>
-      </nav>
+<a href="#/dashboard" id="nav-dashboard">仪表盘</a>
+<a href="#/config" id="nav-config">配置</a>
+<a href="#/ids" id="nav-ids">入侵检测系统</a>
+<a href="#/logging" id="nav-logging">日志记录</a>
+<a href="#/incident-response" id="nav-incident-response">应急响应</a>
+<a href="#/baseline" id="nav-baseline">基线排查</a>
+<a href="#/situation" id="nav-situation">态势感知</a>
+<a href="#/defense" id="nav-defense">自动防御</a>
+<a href="#/av" id="nav-av">病毒查杀</a>
+<a href="#/edge" id="nav-edge">边缘设备</a>
+<a href="#/ai-chat" id="nav-ai-chat">AI安全助手</a>
+<a href="#/login" id="nav-login">登录</a>
+<a href="#/register" id="nav-register">注册</a>
+</nav>
     </header>
     <main class="main">
       <section id="view-login" class="view card">
         <h1>登录</h1>
         <div class="form">
           <label>用户名</label>
-          <input id="login-username" value="admin" />
+          <input id="login-username" value="admin" required />
           <label>密码</label>
-          <input id="login-password" type="password" placeholder="请输入密码" />
+          <input id="login-password" type="password" placeholder="请输入密码" required />
+          <label>
+            <input type="checkbox" id="remember-me"> 记住我
+          </label>
           <button id="btn-login">登录</button>
-          <div id="login-status" class="status"></div>
+          <div id="login-error" class="status" style="color: #e53e3e;"></div>
           <div class="status">没有账户？<a href="#/register">注册</a></div>
         </div>
       </section>
+
+<section id="view-incident-response" class="view card">
+<h1>应急响应预案</h1>
+<div class="incident-response-controls">
+<button id="btn-download-plan" class="success">下载预案</button>
+<button id="btn-print-plan" class="warning">打印预案</button>
+</div>
+<div id="incident-response-content" class="plan-content">
+<p>加载中...</p>
+</div>
+</section>
       <section id="view-register" class="view card">
         <h1>注册</h1>
         <div class="form">
           <label>用户名</label>
-          <input id="reg-username" />
+          <input id="reg-username" required />
+          <label>电子邮箱</label>
+          <input id="reg-email" type="email" required />
           <label>密码</label>
-          <input id="reg-password" type="password" />
+          <input id="reg-password" type="password" required minlength="8" />
           <label>确认密码</label>
-          <input id="reg-confirm" type="password" />
+          <input id="reg-confirm" type="password" required />
           <button id="btn-register">注册</button>
-          <div id="reg-status" class="status"></div>
+          <div id="register-error" class="status" style="color: #e53e3e;"></div>
+            <div id="register-success" class="status" style="color: #38a169;"></div>
         </div>
       </section>
       <section id="view-dashboard" class="view card">
@@ -92,26 +128,319 @@
           </div>
         </div>
       </section>
+      <section id="scan-view" class="view card">
+        <h1>资产扫描</h1>
+        <div class="card">
+            <div class="card-header">扫描设置</div>
+            <div class="card-body">
+                <div class="form">
+                    <label for="scan-target">扫描目标</label>
+                    <input type="text" id="scan-target" placeholder="IP地址、IP范围或域名" required>
+                    <label for="scan-type">扫描类型</label>
+                    <select id="scan-type" required>
+                        <option value="quick">快速扫描</option>
+                        <option value="standard">标准扫描</option>
+                        <option value="comprehensive">全面扫描</option>
+                    </select>
+                    <label>
+                        <input type="checkbox" id="scan-ports" checked> 端口扫描
+                    </label>
+                    <label>
+                        <input type="checkbox" id="scan-services" checked> 服务识别
+                    </label>
+                    <label>
+                        <input type="checkbox" id="scan-vulnerabilities"> 漏洞扫描
+                    </label>
+                    <button id="btn-scan">开始扫描</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 16px;">
+            <div class="card-header">扫描结果</div>
+            <div class="card-body">
+                <div id="scan-status" class="status" style="margin-bottom: 16px;"></div>
+                <div id="scan-progress" style="display: none;">
+                    <div class="loading-spinner"></div>
+                    <span>正在扫描中...</span>
+                </div>
+                <div id="scan-results">
+                    <!-- 扫描结果将在这里显示 -->
+                </div>
+            </div>
+        </div>
+      </section>
       <section id="view-config" class="view card">
         <h1>配置</h1>
         <div class="form">
-          <label>安全模型 API Key</label>
-          <input id="cfg-key" type="password" />
-          <label>API Base</label>
-          <input id="cfg-base" />
-          <label>默认模型</label>
-          <input id="cfg-model" />
-          <label>并发</label>
-          <input id="cfg-concurrency" type="number" />
-          <label>超时(ms)</label>
-          <input id="cfg-timeout" type="number" />
-          <label>管理员密码</label>
-          <input id="cfg-admin" type="password" />
-          <label>IP黑名单(逗号分隔，可填CIDR)</label>
-          <input id="cfg-blacklist" placeholder="如: 203.0.113.7, 198.51.100.0/24" />
-          <label>启用黑名单</label>
-          <input id="cfg-blacklist-enabled" type="checkbox" checked />
-          <button id="btn-save-cfg">保存配置</button>
+              <label>界面透明度</label>
+              <input id="cfg-opacity" type="range" min="0.5" max="1" step="0.05" value="0.9" />
+              <span id="opacity-value">90%</span>
+            </div>
+            <div class="panel" style="margin-top: 16px; padding: 16px; border: 1px solid #ddd; border-radius: 8px;">
+              <h3>代理服务器配置</h3>
+              <div class="form">
+                <label>启用代理</label>
+                <input id="cfg-proxy-enabled" type="checkbox" />
+              </div>
+              <div class="form">
+                <label>代理类型</label>
+                <select id="cfg-proxy-type">
+                  <option value="http">HTTP</option>
+                  <option value="https">HTTPS</option>
+                  <option value="socks5">SOCKS5</option>
+                </select>
+              </div>
+              <div class="form">
+                <label>代理地址</label>
+                <input id="cfg-proxy-host" placeholder="127.0.0.1" />
+              </div>
+              <div class="form">
+                <label>代理端口</label>
+                <input id="cfg-proxy-port" type="number" min="1" max="65535" placeholder="1080" />
+              </div>
+              <div class="form">
+                <label>代理用户名</label>
+                <input id="cfg-proxy-username" placeholder="(可选)" />
+              </div>
+              <div class="form">
+                <label>代理密码</label>
+                <input id="cfg-proxy-password" type="password" placeholder="(可选)" />
+              </div>
+              </div>
+              
+              <div class="panel" style="margin-top: 16px; padding: 16px; border: 1px solid #ddd; border-radius: 8px;">
+                <h3>防火墙联动配置</h3>
+                <div class="form">
+                  <label>启用防火墙联动</label>
+                  <input id="cfg-firewall-enabled" type="checkbox" />
+                </div>
+                <div class="form">
+                  <label>防火墙类型</label>
+                  <select id="cfg-firewall-type">
+                    <option value="iptables">iptables</option>
+                    <option value="ufw">UFW</option>
+                    <option value="windows">Windows Firewall</option>
+                    <option value="custom">自定义</option>
+                  </select>
+                </div>
+                <div class="form">
+                  <label>防火墙主机地址</label>
+                  <input id="cfg-firewall-host" placeholder="127.0.0.1" value="127.0.0.1" />
+                </div>
+                <div class="form">
+                  <label>防火墙管理端口</label>
+                  <input id="cfg-firewall-port" type="number" min="1" max="65535" value="443" />
+                </div>
+                <div class="form">
+                  <label>防火墙API Key</label>
+                  <input id="cfg-firewall-api-key" type="password" placeholder="API密钥" />
+                </div>
+                <div class="form">
+                  <label>启用自动封禁</label>
+                  <input id="cfg-firewall-auto-block" type="checkbox" />
+                </div>
+                <div class="form">
+                  <label>封禁时长(分钟)</label>
+                  <input id="cfg-firewall-block-duration" type="number" min="1" max="10080" value="60" />
+                </div>
+                <div class="form">
+                  <label>联动IPS告警</label>
+                  <input id="cfg-firewall-link-ips" type="checkbox" />
+                </div>
+                <div class="form">
+                  <label>联动IDS告警</label>
+                  <input id="cfg-firewall-link-ids" type="checkbox" />
+                </div>
+              </div>
+              
+              <div class="panel" style="margin-top: 16px; padding: 16px; border: 1px solid #ddd; border-radius: 8px;">
+                <h3>IPS和IDS连接配置</h3>
+                <div class="form">
+                  <label>启用IPS</label>
+                  <input id="cfg-ips-enabled" type="checkbox" />
+                </div>
+                <div class="form">
+                  <label>IPS服务器地址</label>
+                  <input id="cfg-ips-server" placeholder="127.0.0.1" />
+                </div>
+                <div class="form">
+                  <label>IPS服务器端口</label>
+                  <input id="cfg-ips-port" type="number" min="1" max="65535" value="5555" />
+                </div>
+                <div class="form">
+                  <label>IPS协议</label>
+                  <select id="cfg-ips-protocol">
+                    <option value="http">HTTP</option>
+                    <option value="https">HTTPS</option>
+                    <option value="tcp">TCP</option>
+                    <option value="udp">UDP</option>
+                  </select>
+                </div>
+                <div class="form">
+                  <label>IPS API Key</label>
+                  <input id="cfg-ips-api-key" type="password" placeholder="API密钥" />
+                </div>
+                <div class="form">
+                  <label>启用IDS</label>
+                  <input id="cfg-ids-enabled" type="checkbox" />
+                </div>
+                <div class="form">
+                  <label>IDS服务器地址</label>
+                  <input id="cfg-ids-server" placeholder="127.0.0.1" />
+                </div>
+                <div class="form">
+                  <label>IDS服务器端口</label>
+                  <input id="cfg-ids-port" type="number" min="1" max="65535" value="5556" />
+                </div>
+                <div class="form">
+                  <label>IDS协议</label>
+                  <select id="cfg-ids-protocol">
+                    <option value="http">HTTP</option>
+                    <option value="https">HTTPS</option>
+                    <option value="tcp">TCP</option>
+                    <option value="udp">UDP</option>
+                  </select>
+                </div>
+                <div class="form">
+                  <label>IDS API Key</label>
+                  <input id="cfg-ids-api-key" type="password" placeholder="API密钥" />
+                </div>
+                <div class="form">
+                  <label>告警阈值</label>
+                  <input id="cfg-security-alert-threshold" type="number" min="1" max="100" value="70" />
+                </div>
+              </div>
+              
+              <div class="panel" style="margin-top: 16px; padding: 16px; border: 1px solid #ddd; border-radius: 8px;">
+                <h3>DNS服务器配置</h3>
+              <div class="form">
+                <label>启用自定义DNS</label>
+                <input id="cfg-dns-enabled" type="checkbox" />
+              </div>
+              <div class="form">
+                <label>主要DNS服务器</label>
+                <input id="cfg-dns-primary" placeholder="8.8.8.8" />
+              </div>
+              <div class="form">
+                <label>备用DNS服务器</label>
+                <input id="cfg-dns-secondary" placeholder="8.8.4.4" />
+              </div>
+              <div class="form">
+                <label>DNS查询超时(秒)</label>
+                <input id="cfg-dns-timeout" type="number" min="1" max="60" value="5" />
+              </div>
+              <div class="form">
+                <label>启用DNS缓存</label>
+                <input id="cfg-dns-cache-enabled" type="checkbox" checked />
+              </div>
+              <div class="form">
+                <label>DNS缓存TTL(秒)</label>
+                <input id="cfg-dns-cache-ttl" type="number" min="60" max="3600" value="300" />
+              </div>
+            </div>
+            
+            <div class="panel" style="margin-top: 16px; padding: 16px; border: 1px solid #ddd; border-radius: 8px;">
+              <h3>VPN全局管理配置</h3>
+              <div class="form">
+                <label>启用VPN</label>
+                <input id="cfg-vpn-enabled" type="checkbox" />
+              </div>
+              <div class="form">
+                <label>VPN类型</label>
+                <select id="cfg-vpn-type">
+                  <option value="openvpn">OpenVPN</option>
+                  <option value="wireguard">WireGuard</option>
+                  <option value="ikev2">IKEv2</option>
+                </select>
+              </div>
+              <div class="form">
+                <label>VPN服务器地址</label>
+                <input id="cfg-vpn-server" placeholder="vpn.example.com" />
+              </div>
+              <div class="form">
+                <label>VPN端口</label>
+                <input id="cfg-vpn-port" type="number" min="1" max="65535" placeholder="1194" />
+              </div>
+              <div class="form">
+                <label>VPN用户名</label>
+                <input id="cfg-vpn-username" placeholder="(可选)" />
+              </div>
+              <div class="form">
+                <label>VPN密码</label>
+                <input id="cfg-vpn-password" type="password" placeholder="(可选)" />
+              </div>
+              <div class="form">
+                <label>VPN配置文件路径</label>
+                <input id="cfg-vpn-config-path" placeholder="(可选，本地路径)" />
+              </div>
+              <div class="form">
+                <label>自动连接</label>
+                <input id="cfg-vpn-auto-connect" type="checkbox" />
+              </div>
+            </div>
+            
+            <div class="panel" style="margin-top: 16px; padding: 16px; border: 1px solid #ddd; border-radius: 8px;">
+              <h3>DNS服务器配置</h3>
+              <div class="form">
+                <label>启用自定义DNS</label>
+                <input id="cfg-dns-enabled" type="checkbox" />
+              </div>
+              <div class="form">
+                <label>主要DNS服务器</label>
+                <input id="cfg-dns-primary" placeholder="8.8.8.8" />
+              </div>
+              <div class="form">
+                <label>备用DNS服务器</label>
+                <input id="cfg-dns-secondary" placeholder="8.8.4.4" />
+              </div>
+              <div class="form">
+                <label>DNS查询超时(秒)</label>
+                <input id="cfg-dns-timeout" type="number" min="1" max="60" value="5" />
+              </div>
+              <div class="form">
+                <label>启用DNS缓存</label>
+                <input id="cfg-dns-cache-enabled" type="checkbox" checked />
+              </div>
+              <div class="form">
+                <label>DNS缓存TTL(秒)</label>
+                <input id="cfg-dns-cache-ttl" type="number" min="60" max="3600" value="300" />
+              </div>
+            </div>
+            
+            <div class="form">
+              <label>安全模型 API Key</label>
+              <input id="cfg-key" type="password" />
+            </div>
+            <div class="form">
+              <label>API Base</label>
+              <input id="cfg-base" />
+            </div>
+            <div class="form">
+              <label>默认模型</label>
+              <input id="cfg-model" />
+            </div>
+            <div class="form">
+              <label>并发</label>
+              <input id="cfg-concurrency" type="number" />
+            </div>
+            <div class="form">
+              <label>超时(ms)</label>
+              <input id="cfg-timeout" type="number" />
+            </div>
+            <div class="form">
+              <label>管理员密码</label>
+              <input id="cfg-admin" type="password" />
+            </div>
+            <div class="form">
+              <label>IP黑名单(逗号分隔，可填CIDR)</label>
+              <input id="cfg-blacklist" placeholder="如: 203.0.113.7, 198.51.100.0/24" />
+            </div>
+            <div class="form">
+              <label>启用黑名单</label>
+              <input id="cfg-blacklist-enabled" type="checkbox" checked />
+            </div>
+            <button id="btn-save-cfg">保存配置</button>
           <div id="cfg-status" class="status"></div>
         </div>
       </section>
@@ -146,6 +475,81 @@
           <button id="btn-sit-start">开始态势分析</button>
           <div id="sit-status" class="status"></div>
         </div>
+        
+        <!-- 安全概览卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon threat"></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="threat-count">0</div>
+                    <div class="stat-label">威胁数量</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon risk"></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="risk-score">0</div>
+                    <div class="stat-label">风险评分</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon asset"></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="asset-count">0</div>
+                    <div class="stat-label">资产数量</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon incident"></div>
+                <div class="stat-content">
+                    <div class="stat-value" id="incident-count">0</div>
+                    <div class="stat-label">事件数量</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="charts-container">
+            <div class="chart-card panel">
+                <h3>威胁趋势分析</h3>
+                <div id="threat-trend-chart" class="chart"></div>
+            </div>
+            <div class="chart-card panel">
+                <h3>威胁类型分布</h3>
+                <div id="threat-distribution-chart" class="chart"></div>
+            </div>
+        </div>
+        
+        <!-- 实时告警列表 -->
+        <div class="panel">
+            <h3>实时告警</h3>
+            <div class="alert-controls">
+                <div class="alert-filter">
+                    <label>严重级别筛选:</label>
+                    <select id="alert-severity-filter">
+                        <option value="all">全部</option>
+                        <option value="critical">紧急</option>
+                        <option value="high">高危</option>
+                        <option value="medium">中危</option>
+                        <option value="low">低危</option>
+                    </select>
+                </div>
+                <button id="refresh-alerts-btn" class="btn btn-secondary">刷新</button>
+            </div>
+            <div class="alerts-list" id="alerts-list">
+                <!-- 告警项将通过JavaScript动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 安全建议 -->
+        <div class="panel">
+            <h3>安全建议</h3>
+            <div class="recommendations-list" id="recommendations-list">
+                <!-- 安全建议将通过JavaScript动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 原有内容 -->
         <div class="panel">
           <h2>情报趋势</h2>
           <div id="sit-feeds"></div>
@@ -167,6 +571,13 @@
           <input id="df-auto" type="checkbox" />
           <label>周期(秒)</label>
           <input id="df-interval" type="number" value="120" />
+          <label>风险门限</label>
+          <select id="df-risk-threshold">
+            <option value="low">低</option>
+            <option value="medium" selected>中</option>
+            <option value="high">高</option>
+            <option value="critical">严重</option>
+          </select>
           <button id="btn-df-start">启动防御</button>
           <button id="btn-df-stop">停止防御</button>
           <div id="df-status" class="status"></div>
@@ -234,8 +645,98 @@
           </div>
         </div>
       </section>
+      
+      <section id="view-ids" class="view card">
+        <h1>入侵检测系统</h1>
+        <div class="form">
+          <label>检测模式</label>
+          <select id="ids-mode">
+            <option value="realtime">实时检测</option>
+            <option value="scheduled">定时检测</option>
+            <option value="manual">手动检测</option>
+          </select>
+          <button id="btn-ids-start">开始检测</button>
+          <button id="btn-ids-stop">停止检测</button>
+          <div id="ids-status" class="status"></div>
+        </div>
+        <div class="panel">
+          <h2>检测状态</h2>
+          <div id="ids-monitor"></div>
+        </div>
+        <div class="panel">
+          <h2>入侵报告</h2>
+          <button id="btn-ids-print">打印报告</button>
+          <pre id="ids-report"></pre>
+        </div>
+        <div class="panel">
+          <h2>历史警报</h2>
+          <table id="ids-alerts-table"></table>
+        </div>
+      </section>
+      <section id="view-logging" class="view card">
+        <h1>日志记录</h1>
+        <div class="form">
+          <label>日志级别</label>
+          <select id="log-level">
+            <option value="debug">Debug</option>
+            <option value="info">Info</option>
+            <option value="warn">Warning</option>
+            <option value="error">Error</option>
+            <option value="critical">Critical</option>
+          </select>
+          <label>日期范围</label>
+          <input id="log-date-from" type="date" />
+          <input id="log-date-to" type="date" />
+          <button id="btn-log-filter">筛选日志</button>
+          <button id="btn-log-clear">清空筛选</button>
+        </div>
+        <div class="panel">
+          <h2>日志内容</h2>
+          <div id="log-content" style="height: 500px; overflow-y: auto; white-space: pre-wrap;"></div>
+        </div>
+        <div class="panel">
+          <h2>日志统计</h2>
+          <div id="log-stats"></div>
+        </div>
+      </section>
+      <section id="view-ai-chat" class="view card">
+        <h1>AI安全助手</h1>
+        <div style="display: flex; flex-direction: column; height: 70vh;">
+          <h2>与安全模型对话</h2>
+          <p>通过AI助手获取安全建议和分析</p>
+          
+          <!-- 对话历史区域 -->
+          <div id="chat-history" class="panel" style="flex: 1; margin: 16px 0; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+            <!-- 欢迎消息 -->
+            <div class="chat-message bot-message">
+              <div class="chat-header">
+                <span class="chat-avatar">🤖</span>
+                <span class="chat-name">安全助手</span>
+              </div>
+              <div class="chat-content">
+                您好！我是安全助手，我可以帮助您分析安全问题、提供防护建议或解释安全概念。请输入您的问题。
+              </div>
+            </div>
+          </div>
+          
+          <!-- 输入区域 -->
+          <div class="panel" style="padding: 16px;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <input 
+                id="chat-input" 
+                type="text" 
+                placeholder="输入您的问题..."
+                style="flex: 1; margin: 0;"
+              >
+              <button id="chat-send">发送</button>
+              <button id="chat-test" title="使用当前 API Base/模型测试连接">测试连接</button>
+            </div>
+            <div id="chat-status" class="status" style="margin-top: 8px;"></div>
+          </div>
+        </div>
+      </section>
     </main>
     <script src="/bg.js"></script>
-    <script src="/app.js"></script>
+<script src="/app.js"></script>
   </body>
   </html>

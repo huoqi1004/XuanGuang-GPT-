@@ -1,11 +1,10 @@
 import express from "express";
 import cors from "cors";
 import { createScanner } from "./scanner.js";
-import { generateReport } from "./deepseek.js";
+import { generateReport, generateSituationReport, generateDefensePlan, guardValidatePlan, generateChatResponse } from "./deepseek.js";
 import { getConfig, saveConfig, loadConfig } from "./config.js";
 import { requireAuth, createToken, validatePassword, verifyUser, registerUser } from "./auth.js";
 import { queryThreatIntel, queryGlobalFeeds } from "./intel.js";
-import { generateSituationReport, generateDefensePlan, guardValidatePlan } from "./deepseek.js";
 import { ipBlocker } from "./ipfilter.js";
 import multer from "multer";
 import { hashBuffer, quarantineWrite, vtLookupByHash, generateMalwareReport, analyzePoisoning } from "./av.js";
@@ -56,12 +55,49 @@ app.get("/api/scan/:id", requireAuth, (req, res) => {
 });
 
 app.post("/api/login", (req, res) => {
-  const { username, password } = req.body || {};
-  const isAdmin = String(username || "") === "admin" && validatePassword(password);
-  const isUser = verifyUser(String(username || ""), String(password || ""));
-  if (!isAdmin && !isUser) return res.status(401).json({ error: "invalid_credentials" });
-  const token = createToken();
-  res.json({ token, user: { name: username || "admin" } });
+  try {
+    const { username, password } = req.body || {};
+    
+    // 验证输入
+    if (!username || !password) {
+      return res.status(400).json({ 
+        error: "missing_credentials", 
+        message: "请提供用户名和密码" 
+      });
+    }
+    
+    const isAdmin = String(username) === "admin" && validatePassword(password);
+    const isUser = verifyUser(String(username), String(password));
+    
+    if (!isAdmin && !isUser) {
+      return res.status(401).json({ 
+        error: "invalid_credentials", 
+        message: "用户名或密码不正确" 
+      });
+    }
+    
+    // 创建token并关联用户名
+    const { token, expireAt } = createToken(String(username));
+    
+    // 计算过期时间（小时）
+    const expiresIn = Math.round((expireAt - Date.now()) / (1000 * 60 * 60));
+    
+    res.json({
+      token,
+      user: {
+        name: username,
+        role: isAdmin ? 'admin' : 'user'
+      },
+      expiresIn,
+      expireAt
+    });
+  } catch (error) {
+    console.error("登录错误:", error);
+    res.status(500).json({
+      error: "login_error",
+      message: "登录过程中发生错误"
+    });
+  }
 });
 
 app.post("/api/register", (req, res) => {
@@ -120,8 +156,10 @@ app.post("/api/remediation/:id", requireAuth, async (req, res) => {
 
 app.use(express.static("../web"));
 
-const port = process.env.PORT ? Number(process.env.PORT) : 8787;
-app.listen(port, () => {});
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
 
 function rateLimiter({ windowMs = 60000, max = 60 } = {}) {
   const hits = new Map();
@@ -371,4 +409,21 @@ app.post("/api/edge/taskresult", async (req, res) => {
 app.get("/api/edge/list", requireAuth, (req, res) => {
   const list = Array.from(edgeDevices.values()).map(x => ({ id: x.id, name: x.name, board: x.board, arch: x.arch, lastSeen: x.lastSeen, telemetry: x.telemetry || {} }));
   res.json({ list });
+});
+
+// AI对话API
+app.post("/api/ai/chat", requireAuth, async (req, res) => {
+  const { messages } = req.body || {};
+  
+  if (!Array.isArray(messages) || messages.length === 0) {
+    return res.status(400).json({ error: "messages_required" });
+  }
+  
+  try {
+    const response = await generateChatResponse(messages);
+    res.json(response);
+  } catch (error) {
+    console.error("Chat API error:", error);
+    res.status(500).json({ error: "chat_failed", message: String(error) });
+  }
 });

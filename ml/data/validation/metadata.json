@@ -1,0 +1,12 @@
+{
+  "dataset_type": "validation",
+  "generated_at": "2025-11-26T13:58:00.334247",
+  "total_files": 9,
+  "malicious_files": 3,
+  "benign_files": 6,
+  "total_scans": 9,
+  "threat_scans": 3,
+  "safe_scans": 6,
+  "description": "由天穹数据集转换的validation数据集",
+  "source": "天穹安全数据集"
+}

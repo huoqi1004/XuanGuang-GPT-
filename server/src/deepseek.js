@@ -1,5 +1,28 @@
 import fetch from "node-fetch";
 import { getConfig } from "./config.js";
+// 使用动态导入来避免CommonJS和ES模块的兼容性问题
+let mlIntegration = null;
+async function getMlIntegration() {
+  if (!mlIntegration) {
+    try {
+      // 尝试使用动态导入
+      mlIntegration = await import("./ml/ml_integration.js");
+      // 如果是CommonJS模块，取default导出
+      if (mlIntegration && typeof mlIntegration === 'object' && 'default' in mlIntegration) {
+        mlIntegration = mlIntegration.default;
+      }
+    } catch (e) {
+      console.error("Failed to load ML integration:", e);
+      // 创建一个模拟对象以便系统继续工作
+      mlIntegration = {
+        sendMessage: async () => ({
+          response: "ML模型集成失败，使用默认响应。请检查Python环境和模型路径。"
+        })
+      };
+    }
+  }
+  return mlIntegration;
+}
 
 function buildPrompt(scan) {
   const assets = scan.assets.map(a => ({ host: a.host, openPorts: a.openPorts }));
@@ -146,4 +169,156 @@ export async function guardValidatePlan(plan) {
   let parsed = null;
   try { parsed = JSON.parse(content); } catch { parsed = { approve: false, raw: content }; }
   return parsed;
+}
+
+// 使用本地机器学习模型处理对话
+async function generateLocalChatResponse(messages) {
+  try {
+    // 获取ML集成对象
+    const ml = await getMlIntegration();
+    
+    // 准备发送给本地模型的数据
+    const lastUserMessage = messages
+      .filter(msg => msg.role === 'user')
+      .pop()?.content || '';
+    
+    // 发送给本地模型进行处理
+    const result = await ml.sendMessage({
+      action: 'chat_completion',
+      messages: messages,
+      query: lastUserMessage
+    });
+    
+    return {
+      model: "本地安全模型",
+      content: result.response || "本地模型处理失败，无法生成回复。"
+    };
+  } catch (error) {
+    console.error("Local ML model error:", error);
+    // 如果本地模型失败，提供回退响应
+    return {
+      model: "本地安全模型(回退)",
+      content: "我是本地安全AI助手。虽然无法连接到高级模型，但我可以提供基本的安全知识和建议。请提出您的问题，我将尽力帮助。\n\n常见安全问题包括：\n- 网络漏洞扫描与防护\n- 恶意软件检测与分析\n- 安全加固最佳实践\n- 威胁情报分析\n- 事件响应与恢复"
+    };
+  }
+}
+
+// AI对话功能 - 支持混合模型
+export async function generateChatResponse(messages) {
+  const cfg = getConfig();
+  const key = cfg.deepseekApiKey || process.env.DEEPSEEK_API_KEY;
+  const model = cfg.deepseekModel || "deepseek-chat";
+  const useLocalModel = cfg.useLocalModel || false;
+  
+  // 确保消息格式正确
+  const formattedMessages = messages.map(msg => ({
+    role: msg.role,
+    content: msg.content
+  }));
+  
+  // 添加系统提示（如果用户消息中没有）
+  const hasSystemMessage = formattedMessages.some(msg => msg.role === 'system');
+  if (!hasSystemMessage) {
+    formattedMessages.unshift({
+      role: "system",
+      content: "你是专业的安全专家AI助手，精通网络安全、漏洞评估、威胁检测、安全加固等领域。请提供专业、准确、实用的安全建议和解决方案。回答时使用中文，保持友好且专业的语气。"
+    });
+  }
+  
+  // 获取用户的最新问题
+  const lastUserMessage = messages
+    .filter(msg => msg.role === 'user')
+    .pop()?.content || '';
+  
+  // 提供基础回复（当API和本地模型都不可用时）
+  const getBasicResponse = () => {
+    // 基于问题关键词提供基础安全建议
+    let basicResponse = "我是安全AI助手。目前系统配置不完整，无法提供高级分析，但我可以分享一些基础安全知识：\n\n";
+    
+    if (lastUserMessage.includes('漏洞') || lastUserMessage.includes('扫描')) {
+      basicResponse += "**漏洞扫描与管理**\n- 定期进行全面漏洞扫描（推荐使用Nessus、OpenVAS等工具）\n- 优先修复高危漏洞，尤其是远程代码执行类漏洞\n- 建立漏洞响应流程，设定修复时限\n- 定期更新扫描工具和漏洞库";
+    } else if (lastUserMessage.includes('入侵') || lastUserMessage.includes('检测')) {
+      basicResponse += "**入侵检测建议**\n- 部署入侵检测系统（IDS/IPS）监控异常流量\n- 配置日志集中管理，关注关键系统日志\n- 建立基线行为模型，快速识别异常\n- 实施网络分段，限制横向移动";
+    } else if (lastUserMessage.includes('密码') || lastUserMessage.includes('认证')) {
+      basicResponse += "**身份认证加固**\n- 实施强密码策略（长度≥12位，包含大小写字母、数字和特殊字符）\n- 启用多因素认证（MFA）\n- 定期强制密码更新\n- 限制登录尝试次数，实施账户锁定";
+    } else {
+      basicResponse += "**通用安全建议**\n- 定期更新系统和应用程序补丁\n- 部署防火墙，限制不必要的入站和出站连接\n- 实施最小权限原则\n- 定期备份重要数据并测试恢复流程\n- 开展安全意识培训\n- 制定并测试安全事件响应计划";
+    }
+    
+    basicResponse += "\n\n提示：管理员可以通过配置DeepSeek API密钥或正确设置本地模型来启用完整功能。";
+    
+    return {
+      model: "基础安全助手",
+      content: basicResponse
+    };
+  };
+  
+  // 优先使用本地模型（如果配置或没有API密钥）
+  if (useLocalModel || !key) {
+    try {
+      return await generateLocalChatResponse(formattedMessages);
+    } catch (localError) {
+      console.error("本地模型调用失败，使用基础回复:", localError);
+      return getBasicResponse();
+    }
+  }
+  
+  // 使用远程API
+  try {
+    const base = cfg.deepseekApiBase || process.env.DEEPSEEK_API_BASE || "https://api.deepseek.com";
+    const url = `${base}/v1/chat/completions`;
+    
+    const body = {
+      model,
+      messages: formattedMessages
+    };
+    
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${key}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+    
+    if (!r.ok) throw new Error(`DeepSeek API error ${r.status}`);
+    
+    const data = await r.json();
+    const content = data.choices?.[0]?.message?.content || "";
+    
+    // 可以选择在这里使用本地模型进行结果增强
+    const enhanceWithLocalModel = cfg.enhanceWithLocalModel || false;
+    if (enhanceWithLocalModel) {
+      try {
+        const ml = await getMlIntegration();
+        const enhancedResult = await ml.sendMessage({
+          action: 'enhance_response',
+          originalResponse: content,
+          messages: formattedMessages
+        });
+        return {
+          model: `${model} (本地增强)`,
+          content: enhancedResult.enhancedResponse || content
+        };
+      } catch (enhanceError) {
+        // 增强失败时返回原始结果
+        console.warn("Failed to enhance with local model:", enhanceError);
+      }
+    }
+    
+    return {
+      model,
+      content
+    };
+  } catch (error) {
+    console.error("Chat API error:", error);
+    // 远程API失败时回退到本地模型
+    try {
+      return await generateLocalChatResponse(formattedMessages);
+    } catch (fallbackError) {
+      console.error("本地模型回退也失败，使用基础回复:", fallbackError);
+      return getBasicResponse();
+    }
+  }
 }

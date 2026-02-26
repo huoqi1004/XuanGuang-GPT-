@@ -1,0 +1,142 @@
+{
+ "instruction":"保护wifi安全的配置方法有什么?",
+ "input":"",
+"output":"使用安全路由器,隐藏SSID。"
+},
+{
+    "instruction":"虚表指针储存虚表的什么地址?",
+    "input":"",
+    "output":"虚表指针存储的是虚表的首地址。"
+},
+{
+    "instruction":"常见木马躲避杀毒软件查杀手法的是什么?",
+    "input":"",
+    "output":"加花加壳混清特征。"
+},
+{
+    "instruction":"常Windows操作系统存在Samba Wannacry溢出漏洞,打补丁可能影响业务系统正常运行,通过哪些方法也可以防止系统漏洞被利用?",
+    "input":"",
+    "output":"加强系统帐户策略。屏蔽操作系统的139、445端口。"
+},
+{
+    "instruction":"图灵奖是什么?",
+    "input":"",
+    "output":"DH密钥交换协议的发明者Diffie和Hellman两人分享了2015年图灵奖,图灵奖名称来自英国科学家图灵,他破解了二战时德军使用的“Enigma”密码系统。"
+},
+{
+    "instruction":"Cobalt Strike利用域前置上线是什么监听器?",
+    "input":"",
+    "output":"dns。"
+},
+{
+    "instruction":"is7.x 漏洞是?",
+    "input":"",
+    "output":"在利用解析漏洞时，可以利用分号进行截断。"
+},
+{
+    "instruction":"非fastbin的利用方法有哪些?",
+    "input":"",
+    "output":"在栈溢出覆盖堆指针变量。"
+},
+{
+    "instruction":"请问使用哪条指令，可使得文件权限如下: -rwxr-sr-x 1 ctf ctf 1K Dec 20 2017 binary。",
+    "input":"",
+    "output":"chmod 2755 binary。"
+},
+{
+    "instruction":"用户收到了一封可疑的电子邮件，要求用户提供银行账户及密码，这是属于何种攻击 手段?",
+    "input":"",
+    "output":"钓鱼攻击。"
+},
+{
+    "instruction":"如何上传webshell?",
+    "input":"",
+    "output":"利用系统前台的上传业务，获取后台密码，进入后台上传。"
+},
+{
+    "instruction": "SQL 语句中，彻底删除一个表的命令是什么？",
+    "input": "",
+    "output": "`DROP TABLE`。该命令会彻底删除表及其所有数据，且无法恢复。"
+}
+{
+    "instruction":"从安全的角度来看,起到第一道防线的作用的是什么?",
+    "input":"",
+    "output":"防火墙。"
+},
+{
+    "instruction":"请问使用哪条指令，可使得文件权限如下:-rwxr-sr-x 1 ctf ctf 1K Dec 20 2017 binary?",
+    "input":"",
+    "output":"chmod 4755 binary。"
+},
+{
+    "instruction":"攻击可能导致某些系统在重组IP分片的过程中宕机或者重新启动?",
+    "input":"",
+    "output":"PingofDeath。"
+},
+{
+    "instruction": "怎样检查 shadow 文件中的空口令账号？",
+    "input": "",
+    "output": "可以使用以下命令检查 `/etc/shadow` 文件中的空口令账号：\n\n```bash\nawk -F: '($2 == \"\" || $2 == \"!!\") {print $1}' /etc/shadow\n```\n\n该命令会列出所有密码字段为空或为 `!!` 的账号。"
+}
+{
+    "instruction":"linux权限对应错误有哪些?",
+    "input":"",
+    "output":"-rwx----W- 702。"
+},
+{
+    "instruction": "Linux 权限表示中，错误的示例是什么？",
+    "input": "",
+    "output": "`-rwx-=-N-702` 是错误的 Linux 权限表示。正确的权限表示应为 `-rwxrwxrwx` 或类似的格式，其中 `r` 表示读权限，`w` 表示写权限，`x` 表示执行权限，`-` 表示无权限。数字表示法如 `702` 是正确的，但 `-rwx-=-N-` 不符合 Linux 权限表示规范。"
+}
+{
+"instruction":"不是漏洞利用缓解的范围有什么?",
+"input": "",
+"output":"社会工程学攻击，零日攻击（Zero-Day Attack）​，拒绝服务攻击（DoS/DDoS），中间人攻击（MITM），密码攻击（Brute Force / Dictionary Attack），供应链攻击（Supply Chain Attack）​，恶意软件传播（如蠕虫、勒索软件），物理攻击（Physical Tampering）​。"
+},
+{
+"instruction":"MEB 服务器漏洞扫描工具有什么?",
+"input": "",
+"output":"Web Dumper。"
+},
+{
+// "instruction":"为了应对日益严重的垃圾邮件问题,人们设计和应用了各种什么来解决问题？",
+"input": "",
+"output":"内容过滤"
+},
+{
+    "instruction":"信息安全管理最关注的是?",
+    "input":"",
+    "output":"内部恶意攻击."
+},
+{
+     "instruction":"什么工具不是用于二进制静态分析的?",
+     "input":"",
+     "output":"AFL。"
+},
+{
+    "instruction": "小王从服务器 access 日志中发现一条可疑攻击日志：\n\n```\n208.34.12.3 - - [08/Dec/2016:07:30:17 +0000] \"GET /profile/iphp?header=../imgs/1845.jpg HTTP/1.1\" 200 797 \"http://www.xiaoming.com/\" \"Mozilla/5.0...\"\n```\n\n以上日志可以确认是什么类型的攻击?",
+    "input": "",
+    "output": "该日志表明攻击者尝试进行 **目录遍历攻击**(Directory Traversal)。攻击者通过构造恶意参数 `header=../imgs/1845.jpg`，试图访问服务器上非预期的文件路径，可能导致敏感文件泄露。"
+}
+{
+    "instruction":"在使用联合查询注入的过程中，我们需要判断数据表列数，我们用什么方法进行判断?",
+    "input":"",
+    "output":"union select。"
+},
+{
+     "instruction":"不能有效的防范SQL进入攻击的方法有什么?",
+     "input":"",
+     "output":"关掉数据库服务器或者不使用数据库。"
+},
+{
+    "instruction":"不能增强 DNS 安全的是?",
+    "input":"",
+    "output":"更改DNS的端口号。"
+},
+{
+    "instruction":"RDP的端口号为 ",
+    "input":"",
+    "output":"3389。"
+},
+               
+            

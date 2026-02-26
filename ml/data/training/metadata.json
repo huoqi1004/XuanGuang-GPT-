@@ -1,0 +1,12 @@
+{
+  "dataset_type": "training",
+  "generated_at": "2025-11-26T13:58:00.315667",
+  "total_files": 42,
+  "malicious_files": 14,
+  "benign_files": 28,
+  "total_scans": 42,
+  "threat_scans": 14,
+  "safe_scans": 28,
+  "description": "由天穹数据集转换的training数据集",
+  "source": "天穹安全数据集"
+}
